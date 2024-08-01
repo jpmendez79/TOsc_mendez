@@ -1,0 +1,23 @@
+# Ignore ROOT files
+*.root
+
+# Ignore object files
+*.o
+
+# Ignore PNG image files
+*.png
+
+# Ignore files with .old extension
+*.old
+
+# Ignore all binary files
+*.exe
+*.dll
+*.so
+*.bin
+*.dat
+
+# Ignore all files without a file extension (common for binary files)
+*.[^a-zA-Z0-9]*
+
+*.ccls*
