@@ -286,12 +286,33 @@ int main(int argc, char** argv)
 		// 4v Hypothesis
 		double pars_4v_grid[4] ={dm2_41_grid, sin2_2theta_mue_grid, profiled_sin2_theta24, 0};
 	  
+		// Brief aside to calculate Data Delta chisquate
+		osc_test->Set_oscillation_pars(pars_3v_small[0], pars_3v_small[1], pars_3v_small[2], pars_3v_small[3]);
+		osc_test->Apply_oscillation();
+		osc_test->Set_apply_POT();
+		osc_test->Set_asimov2fitdata();
+
+		// Calculate Chisquare 4v with pred 4v and meas 3v
+		double chisquare_4v_data = osc_test->FCN(pars_4v_grid);
+
+		// Calculate Chisquare 3v with pred 3v and meas 3v
+		double chisquare_3v_data = osc_test->FCN(pars_3v_small);
+
+		// Calculate delta chisquare data
+		double delta_chisquare_data = chisquare_4v_data - chisquare_3v_data;
+		
+	      
+		
+
+		// From here 3v Asimov Data is ready
 
 		// Prepare Asimov data for grid psuedo experiments
 		osc_test->Set_oscillation_pars(pars_4v_grid[0], pars_4v_grid[1], pars_4v_grid[2], pars_4v_grid[3]);
 		osc_test->Apply_oscillation();
 		osc_test->Set_apply_POT();
 		osc_test->Set_asimov2fitdata();
+
+	       
 
 		// Generate Asimov Data
 		osc_test->Set_toy_variations(ntoys);
@@ -353,6 +374,7 @@ int main(int argc, char** argv)
 		TTree *ttree = new TTree("ttree", "ttree");
 		ttree->Branch( "idm2", &idm2, "idm2/I" );
 		ttree->Branch( "it14", &it14, "it14/I" );
+		ttree->Branch("delta_chisquare_data", &delta_chisquare_data, "delta_chisquare_data/D");
 		ttree->Branch( "truth_grid_meas_4v_asimov_chi2",  &truth_grid_meas_4v_asimov_chi2, Form("truth_grid_meas_4v_asimov_chi2[%d]/D", ntoys));
 		ttree->Branch( "truth_3v_meas_4v_asimov_chi2",  &truth_3v_meas_4v_asimov_chi2, Form("truth_3v_meas_4v_asimov_chi2[%d]/D", ntoys));
 		ttree->Branch( "truth_grid_meas_3v_asimov_chi2",  &truth_grid_meas_3v_asimov_chi2, Form("truth_grid_meas_3v_asimov_chi2[%d]/D", ntoys));
@@ -383,6 +405,31 @@ int main(int argc, char** argv)
 	} // end Jesse Osc Script
 
 	if (1) { // Calculate "data" delta chi square
+
+		// Setup the 3v Asimov generation
+		
+
+
+		// Prepare 4v parameters
+		// Convert command line argument bin numbers to actual values
+		// log scale dm^2 80 bins
+		TH1D *hist_dm2 = new TH1D("h1_dm2","h1_dm2",80,-2,2);
+		// log schale sin squared 3 thetamue 60 bins
+		TH1D *hist_sin2_2thetamue = new TH1D("h1_sin2_2thetamue","h1_sin2_2thetamue",60,-4,0);
+		double sin2_2theta_mue_grid = hist_sin2_2thetamue->GetBinCenter(it14);
+		double dm2_41_grid = hist_dm2->GetBinCenter(idm2);
+		sin2_2theta_mue_grid = pow(10.0, sin2_2theta_mue_grid);
+		dm2_41_grid = pow(10.0, dm2_41_grid);
+
+		double pars_4v_grid[4] = {
+		};
+		// Calculate 4v chi2
+
+			
+		// Calculate 3v chi2
+
+		// Calculate and print delta chi2
+
 		
 	}
   
