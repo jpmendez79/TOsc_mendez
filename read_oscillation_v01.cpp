@@ -188,43 +188,14 @@ int main(int argc, char** argv)
 	double val_sin2_theta_34  = 0;
   
 	/////////////////////////////////////////////////////////////////////////////////
-
-	/// standard order
-	//  val_dm2_41         = 0;
-	//  val_sin2_2theta_14 = 0.1;
-	//  val_sin2_theta_24  = 0.1;
-  
-	//  osc_test->Set_oscillation_pars(val_dm2_41, val_sin2_2theta_14, val_sin2_theta_24, val_sin2_theta_34);  
-	//  osc_test->Apply_oscillation();  
-	//  osc_test->Set_apply_POT();// meas, CV, COV: all ready
-  
-	// osc_test->Set_meas2fitdata();
-  
-	// osc_test->Set_asimov2fitdata();
-
-	// osc_test->FCN(const double *par);
- 
-	// osc_test->Minimization_OscPars_FullCov(dm2, t14, t24, t34, "str_flag_fixpar");
-
-	// osc_test->Set_toy_variations(int num_toys);
-	// osc_test->Set_toy2fitdata(int itoy)
-
-	//
-
-
-
-	//
-	// The statistic test is implemented by the comination of the above functions
-	//
-	//
-	if (0) {
+	if (1) {
 		// Jesse Mendez
 		// For Real this time
 		// lets go
 		// Constants
 
 		// Profiling constants to adjust
-		// 3v and small mix angles for profiling
+ 		// 3v and small mix angles for profiling
 		// (0.0105925,0.000107978,0.0235,0);
 		// dm2 t14 t24 t34
 		double pars_3v_small[4] = {0, 0.1, 0.1, 0};
@@ -253,40 +224,41 @@ int main(int argc, char** argv)
 		// Convert command line argument bin numbers to actual values
 		// log scale dm^2 80 bins
 		TH1D *hist_dm2 = new TH1D("h1_dm2","h1_dm2",80,-2,2);
-		// log schale sin squared 3 thetamue 60 bins
-		TH1D *hist_sin2_2thetamue = new TH1D("h1_sin2_2thetamue","h1_sin2_2thetamue",60,-4,0);
-		double sin2_2theta_mue_grid = hist_sin2_2thetamue->GetBinCenter(it14);
+		// log schale sin squared 3 thetaee 60 bins
+		TH1D *hist_sin2_2theta_ee = new TH1D("h1_sin2_2theta_ee","h1_sin2_2theta_ee",60,-4,0);
+		double sin2_2theta_ee_grid = hist_sin2_2theta_ee->GetBinCenter(it14);
 		double dm2_41_grid = hist_dm2->GetBinCenter(idm2);
-		sin2_2theta_mue_grid = pow(10.0, sin2_2theta_mue_grid);
+		sin2_2theta_ee_grid = pow(10.0, sin2_2theta_ee_grid);
 		dm2_41_grid = pow(10.0, dm2_41_grid);
 	  
 		// Profile Section
 		// Prepare Asimov data for profiling calculation
-		osc_test->Set_oscillation_pars(pars_3v_small[0], pars_3v_small[1], pars_3v_small[2], pars_3v_small[3]);
-		osc_test->Apply_oscillation();
-		osc_test->Set_apply_POT();
-		osc_test->Set_asimov2fitdata();
+		// osc_test->Set_oscillation_pars(pars_3v_small[0], pars_3v_small[1], pars_3v_small[2], pars_3v_small[3]);
+		// osc_test->Apply_oscillation();
+		// osc_test->Set_apply_POT();
+		// osc_test->Set_asimov2fitdata();
 
-		// Grid scan
-		for(int i = 0; i < steps; i++) {
-			test_sin2_theta24 = i * step_size;
-			if( sin2_2theta_mue_grid > test_sin2_theta24 ) {
-				continue; // No idea why I need this...
-			}	
-			double pars_4nu[4] = {dm2_41_grid, sin2_2theta_mue_grid, test_sin2_theta24, 0};// dm2, t14, t24, t34
-			double chi2 = osc_test->FCN( pars_4nu );
-			if(chi2 < chi2_min) {
-				chi2_min = chi2;
-				profiled_sin2_theta24 = test_sin2_theta24;
-			}
-		}
-		cout << "Profiled sin^2 theta24: " << profiled_sin2_theta24;
-		cout << "Chi Square: " << chi2_min;
+		// // Grid scan
+		// for(int i = 0; i < steps; i++) {
+		// 	test_sin2_theta24 = i * step_size;
+		// 	if( sin2_2theta_mue_grid > test_sin2_theta24 ) {
+		// 		continue; // No idea why I need this...
+		// 	}	
+		// 	double pars_4nu[4] = {dm2_41_grid, sin2_2theta_mue_grid, test_sin2_theta24, 0};// dm2, t14, t24, t34
+		// 	double chi2 = osc_test->FCN( pars_4nu );
+		// 	if(chi2 < chi2_min) {
+		// 		chi2_min = chi2;
+		// 		profiled_sin2_theta24 = test_sin2_theta24;
+		// 	}
+		// }
+		// cout << "Profiled sin^2 theta24: " << profiled_sin2_theta24;
+		// cout << "Chi Square: " << chi2_min;
 
 		// 4v Hypothesis
-		double pars_4v_grid[4] ={dm2_41_grid, sin2_2theta_mue_grid, profiled_sin2_theta24, 0};
+		// Dissapearence Only!
+		double pars_4v_grid[4] ={dm2_41_grid, sin2_2theta_ee_grid, 0, 0};
 	  
-		// Brief aside to calculate Data Delta chisquate
+		// Brief aside to calculate Data Delta chisquare
 		osc_test->Set_oscillation_pars(pars_3v_small[0], pars_3v_small[1], pars_3v_small[2], pars_3v_small[3]);
 		osc_test->Apply_oscillation();
 		osc_test->Set_apply_POT();
@@ -404,35 +376,6 @@ int main(int argc, char** argv)
        
 	} // end Jesse Osc Script
 
-	if (1) { // Calculate "data" delta chi square
-
-		// Setup the 3v Asimov generation
-		
-
-
-		// Prepare 4v parameters
-		// Convert command line argument bin numbers to actual values
-		// log scale dm^2 80 bins
-		TH1D *hist_dm2 = new TH1D("h1_dm2","h1_dm2",80,-2,2);
-		// log schale sin squared 3 thetamue 60 bins
-		TH1D *hist_sin2_2thetamue = new TH1D("h1_sin2_2thetamue","h1_sin2_2thetamue",60,-4,0);
-		double sin2_2theta_mue_grid = hist_sin2_2thetamue->GetBinCenter(it14);
-		double dm2_41_grid = hist_dm2->GetBinCenter(idm2);
-		sin2_2theta_mue_grid = pow(10.0, sin2_2theta_mue_grid);
-		dm2_41_grid = pow(10.0, dm2_41_grid);
-
-		double pars_4v_grid[4] = {
-		};
-		// Calculate 4v chi2
-
-			
-		// Calculate 3v chi2
-
-		// Calculate and print delta chi2
-
-		
-	}
-  
 
 // if (0){ //Azimov data set for CL method
 	
