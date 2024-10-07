@@ -50,7 +50,7 @@ int main(int argc, char *argv[])
 	
 	tree->GetEntry(0);
 
-	double cl_s = 0;
+	double cl_b = 0;
 	double cl_sb = 0;
 
 	for (int i=0; i<array_size; i++) {
@@ -59,17 +59,19 @@ int main(int argc, char *argv[])
 			
 		}
 		if (delta_chi2_3v_toy[i] > delta_chisquare_data) {
-			cl_s++;
+			cl_b++;
 			
 		}
 		
 	}
 
 	cl_sb = cl_sb/array_size;
-	cl_s = cl_s/array_size;
+	cl_b = cl_b/array_size;
+	double cl_s = cl_sb/cl_b;
 	
 	cout << "CL_s+b: " << cl_sb << endl;
-	cout << "CL_s: " << cl_s <<endl;
+	cout << "CL_b: " << cl_b << endl;
+	cout << "CL_s: " << cl_s << endl;
 	
 
 

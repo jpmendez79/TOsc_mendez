@@ -10,7 +10,8 @@ OBJECTS=$(SOURCES:.cpp=.o)
 EXECUTABLE=$(DIR_BIN)/read_oscillation_v01
 
 # Edit this for the location of your root executable
-ROOTSYS=/usr
+# ROOTSYS=/usr
+ROOTSYS=/opt/root/6.22.02-install
 CFLAGS += $(shell $(ROOTSYS)/bin/root-config --cflags)
 LDFLAGS += $(shell $(ROOTSYS)/bin/root-config --libs) 
 

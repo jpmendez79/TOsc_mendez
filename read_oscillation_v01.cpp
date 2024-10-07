@@ -188,7 +188,7 @@ int main(int argc, char** argv)
 	double val_sin2_theta_34  = 0;
   
 	/////////////////////////////////////////////////////////////////////////////////
-	if (1) {
+	if (0) {
 		// Jesse Mendez
 		// For Real this time
 		// lets go
@@ -329,7 +329,7 @@ int main(int argc, char** argv)
 
 		for (int i = 0; i < ntoys; i++) {
 			delta_chi2_grid_toy[i] = truth_grid_meas_4v_asimov_chi2[i] - truth_3v_meas_4v_asimov_chi2[i];
-	    
+
 			delta_chi2_3v_toy[i] = truth_grid_meas_3v_asimov_chi2[i] - truth_3v_meas_3v_asimov_chi2[i];
 			// hist_grid_4v->Fill(truth_grid_meas_4v_asimov_chi2[i]);
 			// hist_3v_4v->Fill(truth_3v_meas_4v_asimov_chi2[i]);
@@ -376,6 +376,160 @@ int main(int argc, char** argv)
        
 	} // end Jesse Osc Script
 
+        if (1) { // Jesse Mendez Curve Plotting Actual Parameters
+		cout << "Curve Plotting Validation" << endl;
+		
+		// Only interested in the area of the curve.
+		// sin2_2theta_ee = [0.1, 1]
+		// delta_msquare_41 = [0.4, 50]
+		// log scale ranges
+		// log_theta = [-1, 1]
+		// log_delta_msquare = [-0.3, 1.7]
+		// Both ranges are = 2
+		// For 50 Points
+		// double step_size = 0.04
+		// steps = 50
+		// For 100 Points
+		double step_size = 0.02;
+		int steps = 100;
+
+		// The target we are loking for
+		double cls_target = 0.05;
+
+		// 3v Hypothesis
+		double pars_3v[4] = {0, 0.1, 0.1, 0};
+
+		// Spectrum Generation
+		const int ntoys = 500;
+
+		// Parameter Curve Plotting
+		vector<double> curve_sin2_2theta_ee;
+		vector<double> curve_delta_msquare_41;
+		
+		for(int i=0; i<steps; i++) {
+			// 4v Hypothesis Data structures
+			// Static size to allow writing to root file
+			double truth_grid_meas_4v_asimov_chi2[ntoys];
+			double truth_3v_meas_4v_asimov_chi2[ntoys];
+
+			// 3v Hypothesis Data Structures
+			double truth_grid_meas_3v_asimov_chi2[ntoys];
+			double truth_3v_meas_3v_asimov_chi2[ntoys];
+
+			// Delta chisquare Data Structures
+			double delta_chi2_grid_toy[ntoys];
+			double delta_chi2_3v_toy[ntoys];
+
+			// CLs Data Structures
+			double clsb = 0.0;
+			double clb = 0.0;
+			
+			// Calculate Parameters for step
+			double sin2_2theta_ee = -1.0 + (i*step_size);
+			sin2_2theta_ee = pow(10, sin2_2theta_ee);
+			double delta_msquare_41 = -0.3 + (i*step_size);
+			delta_msquare_41 = pow(10, delta_msquare_41);
+			double pars_4v_grid[4] = {delta_msquare_41, sin2_2theta_ee, 0, 0};
+			
+			// Calculate chi_crit for step
+			// Load up 3v for comparison
+			osc_test->Set_oscillation_pars(pars_3v[0], pars_3v[1], pars_3v[2], pars_3v[3]);
+			osc_test->Apply_oscillation();
+			osc_test->Set_apply_POT();
+			osc_test->Set_asimov2fitdata();
+
+			// Calculate Chisquare 4v with pred 4v and meas 3v
+			double chisquare_4v_crit = osc_test->FCN(pars_4v_grid);
+
+			// Calculate Chisquare 3v with pred 3v and meas 3v
+			double chisquare_3v_crit = osc_test->FCN(pars_3v);
+
+			// Calculate delta chisquare data
+			double delta_chisquare_crit = chisquare_4v_crit - chisquare_3v_crit;
+			
+			// 4v Hypothesis
+			// Prepare Asimov data for grid psuedo experiments
+			osc_test->Set_oscillation_pars(pars_4v_grid[0], pars_4v_grid[1], pars_4v_grid[2], pars_4v_grid[3]);
+			osc_test->Apply_oscillation();
+			osc_test->Set_apply_POT();
+			osc_test->Set_asimov2fitdata();
+	       		// Generate Asimov Data
+			osc_test->Set_toy_variations(ntoys);
+			// Calculate chi2
+			for(int j=0; j<ntoys; j++) {
+				osc_test->Set_toy2fitdata(j+1);
+				truth_grid_meas_4v_asimov_chi2[j] = osc_test->FCN(pars_4v_grid);
+				truth_3v_meas_4v_asimov_chi2[j] = osc_test->FCN(pars_3v);
+				delta_chi2_grid_toy[j] = truth_grid_meas_4v_asimov_chi2[j] - truth_3v_meas_4v_asimov_chi2[j];
+				if (delta_chi2_grid_toy[j] > delta_chisquare_crit) {
+					clsb++;
+					
+				}
+			}
+
+			// 3v Hypothesis
+			// Prepare Asimov data for grid psuedo experiments
+			osc_test->Set_oscillation_pars(pars_3v[0], pars_3v[1], pars_3v[2], pars_3v[3]);
+			osc_test->Apply_oscillation();
+			osc_test->Set_apply_POT();
+			osc_test->Set_asimov2fitdata();
+
+			// Generate Asimov Data
+			osc_test->Set_toy_variations(ntoys);
+
+			// Calculate chi2
+			for(int k=0; k<ntoys; k++) {
+				osc_test->Set_toy2fitdata(k+1);
+				truth_grid_meas_3v_asimov_chi2[k] = osc_test->FCN(pars_4v_grid);
+				truth_3v_meas_3v_asimov_chi2[k] = osc_test->FCN(pars_3v);
+				delta_chi2_3v_toy[k] = truth_grid_meas_3v_asimov_chi2[k] - truth_3v_meas_3v_asimov_chi2[k];
+				if (delta_chi2_3v_toy[k] > delta_chisquare_crit) {
+					clb++;
+				}
+			}
+
+			// Compare CL_s to target CL_s
+			clsb = clsb / ntoys;
+			clb = clb / ntoys;
+			double cls = clsb / clb;
+			if (cls <= cls_target) {
+				curve_sin2_2theta_ee.push_back(sin2_2theta_ee);
+				curve_delta_msquare_41.push_back(delta_msquare_41);
+
+			}
+
+			// Save outputs to file
+			roostr = TString::Format("./mendez_osc_analysis_validation_curve_CLs_theta_ee_%.3g_dm2_%.3g.root", sin2_2theta_ee, delta_msquare_41);
+			TFile *rootfile = new TFile(roostr, "recreate");
+			TTree *ttree = new TTree("ttree", "ttree");
+			ttree->Branch("sin2_2theta_ee", &sin2_2theta_ee, "sin2_2theta_ee/D");
+			ttree->Branch("delta_msquare_41", &delta_msquare_41, "delta_msquare_41/D");
+			ttree->Branch("delta_chisquare_crit", &delta_chisquare_crit, "delta_chisquare_crit/D");
+			ttree->Branch("clsb", &clsb, "clsb/D");
+			ttree->Branch("clb", &clb, "clb/D");
+			ttree->Branch("cls", &cls, "cls/D");
+			ttree->Branch("truth_grid_meas_4v_asimov_chi2",  &truth_grid_meas_4v_asimov_chi2, Form("truth_grid_meas_4v_asimov_chi2[%d]/D", ntoys));
+			ttree->Branch("truth_3v_meas_4v_asimov_chi2",  &truth_3v_meas_4v_asimov_chi2, Form("truth_3v_meas_4v_asimov_chi2[%d]/D", ntoys));
+			ttree->Branch("truth_grid_meas_3v_asimov_chi2",  &truth_grid_meas_3v_asimov_chi2, Form("truth_grid_meas_3v_asimov_chi2[%d]/D", ntoys));
+			ttree->Branch("truth_3v_meas_3v_asimov_chi2",  &truth_3v_meas_3v_asimov_chi2, Form("truth_3v_meas_3v_asimov_chi2[%d]/D", ntoys));
+			ttree->Branch("delta_chi2_grid_toy",  &delta_chi2_grid_toy, Form("delta_chi2_grid_toy[%d]/D", ntoys));
+			ttree->Branch("delta_chi2_3v_toy",  &delta_chi2_3v_toy, Form("delta_chi2_3v_toy[%d]/D", ntoys));
+
+			ttree->Fill();
+			rootfile->Write();
+			rootfile->Close();
+			delete rootfile;
+		}
+		roostr = TString::Format("./mendez_osc_analysis_validation_curve_CLs_95_points.root");
+		TFile *rootfile = new TFile(roostr, "recreate");
+		TTree *ttree = new TTree("ttree", "ttree");
+		ttree->Branch("curve_sin2_2theta_ee", &curve_sin2_2theta_ee);
+		ttree->Branch("curve_delta_msquare_41", &curve_delta_msquare_41);
+		ttree->Fill();
+		rootfile->Write();
+		rootfile->Close();
+		delete rootfile;
+        }
 
 // if (0){ //Azimov data set for CL method
 	
